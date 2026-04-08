@@ -1,12 +1,5 @@
-export async function getServerSideProps() {
-  return {
-    redirect: {
-      destination: '/login',
-      permanent: false,
-    },
-  }
-}
+import { redirect } from 'next/navigation'
 
 export default function Home() {
-  return null
+  redirect('/login')
 }
