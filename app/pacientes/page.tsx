@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LogoutButton } from '@/components/logout-button'
 import PacientesTable from './pacientes-table'
+import RecursosTable from './recursos-table'
 import { CirclePlus } from 'lucide-react'
 
 export default async function PacientesPage() {
@@ -19,7 +20,12 @@ export default async function PacientesPage() {
         .select('id, nombre_completo, email, telefono, dni')
         .order('nombre_completo', { ascending: true })
 
-    if (pacientesError) {
+    const { data: categorias, error: categoriasError } = await supabase
+        .from('categorias_recursos')
+        .select('id, nombre_categoria, descripcion')
+        .order('nombre_categoria', { ascending: true })
+
+    if (pacientesError || categoriasError) {
         return (
         <main className="min-h-screen bg-slate-100 px-4 py-10">
             <div className="mx-auto w-full max-w-6xl">
@@ -36,7 +42,8 @@ export default async function PacientesPage() {
                 </div>
 
                 <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                Error cargando pacientes: {pacientesError.message}
+                {pacientesError && <p>Error cargando pacientes: {pacientesError.message}</p>}
+                {categoriasError && <p>Error cargando categorías: {categoriasError.message}</p>}
                 </div>
             </div>
             </div>
@@ -89,6 +96,47 @@ export default async function PacientesPage() {
                 <div className="px-6 py-12 text-center">
                     <p className="text-sm text-slate-500">
                     No hay pacientes registrados.
+                    </p>
+                </div>
+                )}
+            </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 space-y-3 md:space-y-4">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                <h2 className="text-xl font-semibold text-slate-900">
+                    Categorías de Recursos
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                    Gestiona las categorías de recursos para almacenar archivos.
+                </p>
+                </div>
+
+                <Link
+                href="/pacientes/recursos/nuevo"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+                >
+                <CirclePlus className="h-5 w-5" />
+                <span>Crear nueva categoría</span>
+                </Link>
+            </div>
+            </section>
+
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 px-6 py-4">
+                <h3 className="text-sm font-medium uppercase tracking-wide text-slate-500">
+                Categorías registradas
+                </h3>
+            </div>
+
+            <div className="overflow-x-auto">
+                {categorias && categorias.length > 0 ? (
+                <RecursosTable categorias={categorias} />
+                ) : (
+                <div className="px-6 py-12 text-center">
+                    <p className="text-sm text-slate-500">
+                    No hay categorías registradas.
                     </p>
                 </div>
                 )}
